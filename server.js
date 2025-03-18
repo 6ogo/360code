@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const { Octokit } = require('@octokit/rest');
 const parseDiff = require('parse-diff');
+const path = require('path');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -9,35 +10,55 @@ const port = process.env.PORT || 3000;
 const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
 const repos = ['6ogo/app.360code.io', '6ogo/360code'];
 
-// Serve static frontend files
-app.use(express.static('public'));
+// API routes need to be defined BEFORE static file middleware
+// to prevent the static middleware from handling API requests
 
-// Serve timeline data at the root path for the subdomain
-app.get('/', async (req, res) => {
-  // Check if this is the timeline subdomain
-  if (req.hostname === 'timeline.360code.io') {
-    try {
-      const timeline = await generateTimeline();
-      res.json(timeline);
-    } catch (error) {
-      console.error(error);
-      res.status(500).send('Error fetching timeline data');
-    }
+// Detect timeline subdomain and serve JSON data
+app.get('/', (req, res, next) => {
+  const isTimelineSubdomain = req.hostname === 'timeline.360code.io';
+  
+  if (isTimelineSubdomain && req.headers.accept && req.headers.accept.includes('application/json')) {
+    // This is an API request to the timeline subdomain root
+    generateTimeline()
+      .then(timeline => res.json(timeline))
+      .catch(error => {
+        console.error('Timeline generation error:', error);
+        res.status(500).json({ error: 'Error fetching timeline data' });
+      });
   } else {
-    // If not on the timeline subdomain, serve the static index.html
-    res.sendFile('index.html', { root: './public' });
+    // Continue to next middleware (which will serve static files)
+    next();
   }
 });
 
-// Keep the original /timeline endpoint for backward compatibility
+// Traditional timeline endpoint (for backward compatibility)
 app.get('/timeline', async (req, res) => {
   try {
     const timeline = await generateTimeline();
     res.json(timeline);
   } catch (error) {
-    console.error(error);
-    res.status(500).send('Error fetching timeline data');
+    console.error('Timeline endpoint error:', error);
+    res.status(500).json({ error: 'Error fetching timeline data' });
   }
+});
+
+// API endpoint specifically for the timeline subdomain
+app.get('/api/timeline', async (req, res) => {
+  try {
+    const timeline = await generateTimeline();
+    res.json(timeline);
+  } catch (error) {
+    console.error('API timeline error:', error);
+    res.status(500).json({ error: 'Error fetching timeline data' });
+  }
+});
+
+// Serve static files AFTER API routes
+app.use(express.static('public'));
+
+// Fallback route to serve index.html for any other routes
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 async function generateTimeline() {

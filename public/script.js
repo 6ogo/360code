@@ -1,14 +1,28 @@
-// Determine the correct API endpoint based on the current hostname
-let timelineEndpoint = '/timeline';
-if (window.location.hostname === 'timeline.360code.io') {
-  timelineEndpoint = '/'; // Use root path on the timeline subdomain
+// Determine the appropriate API endpoint based on the current hostname
+let timelineEndpoint = '/api/timeline';
+
+// If we're on the main domain, use the backward-compatible endpoint
+if (window.location.hostname !== 'timeline.360code.io') {
+  timelineEndpoint = '/timeline';
 }
 
+console.log(`Fetching timeline data from: ${timelineEndpoint}`);
+
 fetch(timelineEndpoint)
-  .then(response => response.json())
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(`Network response was not ok: ${response.status}`);
+    }
+    return response.json();
+  })
   .then(data => {
     const timelineDiv = document.getElementById('timeline');
     const sortedDates = Object.keys(data).sort().reverse(); // Newest first
+
+    if (sortedDates.length === 0) {
+      timelineDiv.innerHTML = '<div class="no-data">No timeline data available</div>';
+      return;
+    }
 
     sortedDates.forEach(date => {
       const card = document.createElement('div');
@@ -63,6 +77,6 @@ fetch(timelineEndpoint)
     });
   })
   .catch(error => {
-    console.error('Error:', error);
-    document.getElementById('timeline').textContent = 'Failed to load timeline.';
+    console.error('Error fetching timeline data:', error);
+    document.getElementById('timeline').textContent = 'Failed to load timeline. ' + error.message;
   });
