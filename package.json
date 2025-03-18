@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "@octokit/rest": "^21.1.1",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "parse-diff": "^0.11.1"
+  }
+}

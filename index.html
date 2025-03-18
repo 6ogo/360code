@@ -1,52 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>360code.io - Your AI Coding Colleague</title>
-    <link rel="stylesheet" href="styles/index.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Code Change Timeline</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .home-btn { margin-bottom: 20px; }
+    .day-section { border-bottom: 1px solid #ccc; padding: 10px 0; }
+    .repo-section { margin-left: 20px; }
+    .change-list { margin-left: 40px; }
+  </style>
 </head>
 <body>
-    <header>
-        <h1>Welcome to 360code.io</h1>
-        <p>Your AI Coding Colleague for All Aspects of Development</p>
-    </header>
+  <a href="https://360code.io" class="home-btn">Home</a>
+  <h1>Code Change Timeline</h1>
+  <div id="timeline"></div>
 
-    <section id="features">
-        <h2>Features</h2>
-        <ul>
-            <li>Finds context and inspiration for your coding tasks</li>
-            <li>Writes code in multiple languages</li>
-            <li>Fixes bugs and resolves issues quickly</li>
-            <li>Master of git and GitHub for seamless version control</li>
-            <li>Creates clear, concise documentation</li>
-            <li>Your startup’s perfect coding teammate</li>
-        </ul>
-    </section>
+  <script>
+    fetch('https://timeline.360code.io/')
+      .then(response => response.json())
+      .then(data => {
+        const timelineDiv = document.getElementById('timeline');
+        for (const [repo, summaries] of Object.entries(data)) {
+          const repoHeader = document.createElement('h2');
+          repoHeader.textContent = repo;
+          timelineDiv.appendChild(repoHeader);
 
-    <section id="how-it-works">
-        <h2>How It Works</h2>
-        <p>360code.io uses cutting-edge AI to support you from ideation to deployment. It understands your project’s context, generates code, manages repositories, and keeps everything documented—all locally on your machine.</p>
-    </section>
+          const sortedDates = Object.keys(summaries).sort().reverse();
+          sortedDates.forEach(date => {
+            const summary = summaries[date];
+            const dayDiv = document.createElement('div');
+            dayDiv.className = 'day-section';
+            dayDiv.innerHTML = `<h3>${date}</h3>`;
 
-    <section id="use-cases">
-        <h2>Use Cases</h2>
-        <ul>
-            <li>Boost productivity for startups with tight deadlines</li>
-            <li>Simplify debugging and code reviews</li>
-            <li>Collaborate with AI on multi-language projects</li>
-            <li>Keep documentation up-to-date effortlessly</li>
-        </ul>
-    </section>
+            const changes = [];
+            if (summary.added.length) {
+              changes.push('Added:<ul>' + summary.added.map(f => `<li>${f.file}: functions ${f.functions.join(', ')}</li>`).join('') + '</ul>');
+            }
+            if (summary.removed.length) {
+              changes.push('Removed:<ul>' + summary.removed.map(f => `<li>${f}</li>`).join('') + '</ul>');
+            }
+            if (summary.modified.length) {
+              changes.push('Modified:<ul>' + summary.modified.map(m => `<li>${m.file}: ${m.changes.join(', ')}</li>`).join('') + '</ul>');
+            }
 
-    <section id="get-started">
-        <h2>Get Started</h2>
-        <p>Run 360code.io locally on your desktop or via CLI. Stay tuned for our CLI tool to unlock the full power of your AI coding colleague!</p>
-        <button onclick="alert('CLI tool coming soon!')">Download CLI</button>
-    </section>
-
-    <footer>
-        <p>&copy; 2025 360code.io | Contact: info@360code.io</p>
-    </footer>
+            dayDiv.innerHTML += `<div class="repo-section">${changes.join('')}</div>`;
+            timelineDiv.appendChild(dayDiv);
+          });
+        }
+      })
+      .catch(error => {
+        document.getElementById('timeline').textContent = 'Error loading timeline: ' + error.message;
+      });
+  </script>
 </body>
 </html>

@@ -1,3 +1,4 @@
+node_modules/.bin/mime
+/node_modules
+package-lock.json
 .env
-inspo.txt
-node_modules
