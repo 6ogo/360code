@@ -1,9 +1,11 @@
-require('dotenv').config();
-const express = require('express');
-const { Octokit } = require('@octokit/rest');
-const parseDiff = require('parse-diff');
-// Add node-fetch for compatibility with all Node.js versions
-const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+import dotenv from 'dotenv';
+import express from 'express';
+import { Octokit } from '@octokit/rest';
+import parseDiff from 'parse-diff';
+import fetch from 'node-fetch';
+
+// Initialize dotenv
+dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
