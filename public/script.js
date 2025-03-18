@@ -1,4 +1,10 @@
-fetch('/timeline')
+// Determine the correct API endpoint based on the current hostname
+let timelineEndpoint = '/timeline';
+if (window.location.hostname === 'timeline.360code.io') {
+  timelineEndpoint = '/'; // Use root path on the timeline subdomain
+}
+
+fetch(timelineEndpoint)
   .then(response => response.json())
   .then(data => {
     const timelineDiv = document.getElementById('timeline');

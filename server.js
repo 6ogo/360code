@@ -12,7 +12,24 @@ const repos = ['6ogo/app.360code.io', '6ogo/360code'];
 // Serve static frontend files
 app.use(express.static('public'));
 
-// Timeline endpoint
+// Serve timeline data at the root path for the subdomain
+app.get('/', async (req, res) => {
+  // Check if this is the timeline subdomain
+  if (req.hostname === 'timeline.360code.io') {
+    try {
+      const timeline = await generateTimeline();
+      res.json(timeline);
+    } catch (error) {
+      console.error(error);
+      res.status(500).send('Error fetching timeline data');
+    }
+  } else {
+    // If not on the timeline subdomain, serve the static index.html
+    res.sendFile('index.html', { root: './public' });
+  }
+});
+
+// Keep the original /timeline endpoint for backward compatibility
 app.get('/timeline', async (req, res) => {
   try {
     const timeline = await generateTimeline();
