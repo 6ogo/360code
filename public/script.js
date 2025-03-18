@@ -1,10 +1,5 @@
-// Determine the appropriate API endpoint based on the current hostname
-let timelineEndpoint = '/api/timeline';
-
-// If we're on the main domain, use the backward-compatible endpoint
-if (window.location.hostname !== 'timeline.360code.io') {
-  timelineEndpoint = '/timeline';
-}
+// For timeline.360code.io, fetch from root, otherwise use /timeline
+const timelineEndpoint = window.location.hostname === 'timeline.360code.io' ? '/' : '/timeline';
 
 console.log(`Fetching timeline data from: ${timelineEndpoint}`);
 
@@ -78,5 +73,6 @@ fetch(timelineEndpoint)
   })
   .catch(error => {
     console.error('Error fetching timeline data:', error);
-    document.getElementById('timeline').textContent = 'Failed to load timeline. ' + error.message;
+    document.getElementById('timeline').innerHTML = 
+      `<div class="error">Failed to load timeline: ${error.message}</div>`;
   });

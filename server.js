@@ -10,54 +10,32 @@ const port = process.env.PORT || 3000;
 const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
 const repos = ['6ogo/app.360code.io', '6ogo/360code'];
 
-// API routes need to be defined BEFORE static file middleware
-// to prevent the static middleware from handling API requests
-
-// Detect timeline subdomain and serve JSON data
-app.get('/', (req, res, next) => {
-  const isTimelineSubdomain = req.hostname === 'timeline.360code.io';
-  
-  if (isTimelineSubdomain && req.headers.accept && req.headers.accept.includes('application/json')) {
-    // This is an API request to the timeline subdomain root
-    generateTimeline()
-      .then(timeline => res.json(timeline))
-      .catch(error => {
-        console.error('Timeline generation error:', error);
-        res.status(500).json({ error: 'Error fetching timeline data' });
-      });
-  } else {
-    // Continue to next middleware (which will serve static files)
-    next();
+// Middleware to handle subdomain routing
+app.use(async (req, res, next) => {
+  // Check if this is the timeline subdomain request
+  if (req.hostname === 'timeline.360code.io') {
+    try {
+      // Generate timeline data
+      const timeline = await generateTimeline();
+      
+      // For the root path of the timeline subdomain, send the data
+      if (req.path === '/' || req.path === '') {
+        return res.json(timeline);
+      }
+    } catch (error) {
+      console.error('Timeline generation error:', error);
+      return res.status(500).json({ error: 'Error generating timeline data' });
+    }
   }
+  // For all other cases, continue to next middleware
+  next();
 });
 
-// Traditional timeline endpoint (for backward compatibility)
-app.get('/timeline', async (req, res) => {
-  try {
-    const timeline = await generateTimeline();
-    res.json(timeline);
-  } catch (error) {
-    console.error('Timeline endpoint error:', error);
-    res.status(500).json({ error: 'Error fetching timeline data' });
-  }
-});
-
-// API endpoint specifically for the timeline subdomain
-app.get('/api/timeline', async (req, res) => {
-  try {
-    const timeline = await generateTimeline();
-    res.json(timeline);
-  } catch (error) {
-    console.error('API timeline error:', error);
-    res.status(500).json({ error: 'Error fetching timeline data' });
-  }
-});
-
-// Serve static files AFTER API routes
+// Serve static frontend files after subdomain check
 app.use(express.static('public'));
 
-// Fallback route to serve index.html for any other routes
-app.get('*', (req, res) => {
+// If no static file is found, handle the root route
+app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
