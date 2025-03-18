@@ -2,7 +2,6 @@ require('dotenv').config();
 const express = require('express');
 const { Octokit } = require('@octokit/rest');
 const parseDiff = require('parse-diff');
-const path = require('path');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -10,34 +9,72 @@ const port = process.env.PORT || 3000;
 const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
 const repos = ['6ogo/app.360code.io', '6ogo/360code'];
 
-// Middleware to handle subdomain routing
-app.use(async (req, res, next) => {
-  // Check if this is the timeline subdomain request
-  if (req.hostname === 'timeline.360code.io') {
-    try {
-      // Generate timeline data
-      const timeline = await generateTimeline();
+// IMPORTANT: We need to check the subdomain BEFORE serving static files
+app.use((req, res, next) => {
+  // Debug the hostname to see what we're getting
+  console.log('Request hostname:', req.hostname);
+  
+  // Check if this is the timeline subdomain
+  if (req.hostname === 'timeline.360code.io' || 
+      req.hostname === 'timeline' || 
+      req.headers.host === 'timeline.360code.io') {
+    
+    console.log('Timeline subdomain detected, path:', req.path);
+    
+    // For the root path of the subdomain, serve JSON timeline data
+    if (req.path === '/' || req.path === '') {
+      // Set no-cache headers to prevent caching issues
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+      res.setHeader('Surrogate-Control', 'no-store');
       
-      // For the root path of the timeline subdomain, send the data
-      if (req.path === '/' || req.path === '') {
-        return res.json(timeline);
+      // First check if this is a request that expects JSON
+      const acceptHeader = req.headers.accept || '';
+      if (acceptHeader.includes('application/json')) {
+        console.log('JSON request detected');
+        generateTimeline()
+          .then(timeline => {
+            // Set proper content type
+            res.setHeader('Content-Type', 'application/json');
+            res.send(JSON.stringify(timeline));
+          })
+          .catch(error => {
+            console.error('Error generating timeline:', error);
+            res.status(500).json({ error: 'Failed to generate timeline' });
+          });
+        return; // Stop processing more middleware
+      } else {
+        // For HTML requests to the root, serve the main timeline page
+        console.log('HTML request detected');
+        res.sendFile('index.html', { root: './public' });
+        return;
       }
-    } catch (error) {
-      console.error('Timeline generation error:', error);
-      return res.status(500).json({ error: 'Error generating timeline data' });
+    } else {
+      // For any other path on the timeline subdomain, serve the redirect page
+      console.log('Serving subdomain redirect page');
+      res.sendFile('subdomain.html', { root: './public' });
+      return;
     }
   }
-  // For all other cases, continue to next middleware
+  
+  // For all other cases, proceed to the next middleware
   next();
 });
 
-// Serve static frontend files after subdomain check
-app.use(express.static('public'));
-
-// If no static file is found, handle the root route
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+// Traditional /timeline endpoint
+app.get('/timeline', async (req, res) => {
+  try {
+    const timeline = await generateTimeline();
+    res.json(timeline);
+  } catch (error) {
+    console.error('Error in /timeline endpoint:', error);
+    res.status(500).json({ error: 'Error fetching timeline data' });
+  }
 });
+
+// Serve static files AFTER checking for subdomain
+app.use(express.static('public'));
 
 async function generateTimeline() {
   const timeline = {};

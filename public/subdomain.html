@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>360Code Timeline - Redirecting</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+    }
+    
+    .card {
+      background-color: white;
+      padding: 20px;
+      margin: 50px auto;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      max-width: 500px;
+    }
+    
+    a {
+      display: inline-block;
+      background-color: #007bff;
+      color: white;
+      padding: 10px 20px;
+      text-decoration: none;
+      border-radius: 5px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>360Code Timeline</h1>
+    <p>This page should automatically redirect to the timeline data.</p>
+    <p>If you're seeing this page, you might have accessed a subpath of the timeline subdomain.</p>
+    <a href="https://timeline.360code.io">Go to Timeline</a>
+  </div>
+  
+  <script>
+    // Redirect to the root of the subdomain if not already there
+    if (window.location.pathname !== '/' && window.location.pathname !== '') {
+      window.location.href = 'https://timeline.360code.io/';
+    }
+  </script>
+</body>
+</html>
