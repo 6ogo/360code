@@ -36,15 +36,20 @@ app.use((req, res, next) => {
                 const acceptHeader = req.headers.accept || '';
                 if (acceptHeader.includes('application/json')) {
                     console.log('JSON request detected, generating timeline');
-                    return generateTimeline()
+                    generateTimeline()
                         .then(timeline => {
                             res.setHeader('Content-Type', 'application/json');
                             res.json(timeline);
                         })
                         .catch(error => {
                             console.error('Error generating timeline:', error);
-                            res.status(500).json({ error: 'Failed to generate timeline', message: error.message });
+                            res.status(500).json({ 
+                                error: 'Failed to generate timeline', 
+                                message: error.message,
+                                stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+                            });
                         });
+                    return;
                 } else {
                     console.log('HTML request detected');
                     return res.sendFile('index.html', { root: './public' });
@@ -58,7 +63,11 @@ app.use((req, res, next) => {
         next();
     } catch (error) {
         console.error('Error in subdomain middleware:', error);
-        next(error);
+        res.status(500).json({ 
+            error: 'Error in subdomain middleware', 
+            message: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        });
     }
 });
 
