@@ -2,6 +2,7 @@
 title: Design Guidelines
 theme: default
 ---
+<link rel="icon" type="image/png" href="/favicon.png">
 
 # Design Guidelines
 
@@ -16,7 +17,7 @@ Our brand's color scheme creates a harmonious and engaging visual experience.
 **Primary Color:**
 
 <div style="background-color: #2b408d; color: white; padding: 10px; border-radius: 5px;">
-  <strong>Hex:</strong> #2b408d<br>
+  <strong>Hex:</strong> #2b408d |
   <strong>RGB:</strong> (43, 64, 141)
 </div>
 
@@ -34,9 +35,7 @@ Our brand's color scheme creates a harmonious and engaging visual experience.
 
 **Neutral Colors:**
 
-- Light Neutral: <span style="background-color: #F2F2F2; padding: 2px 10px; border-radius: 3px;">#F2F2F2</span>
-- Dark Neutral: <span style="background-color: #333333; color: white; padding: 2px 10px; border-radius: 3px;">#333333</span>
-- Mid Neutral: <span style="background-color: #999999; padding: 2px 10px; border-radius: 3px;">#999999</span>
+Light Neutral: <span style="background-color: #F2F2F2; padding: 2px 10px; border-radius: 3px;">#F2F2F2</span> Dark Neutral: <span style="background-color: #333333; color: white; padding: 2px 10px; border-radius: 3px;">#333333</span> Mid Neutral: <span style="background-color: #999999; padding: 2px 10px; border-radius: 3px;">#999999</span>
 
 ---
 
@@ -62,9 +61,42 @@ Consistent typography enhances readability and reinforces our brand identity.
 
 Proper usage of our logo ensures brand recognition and maintains visual integrity.
 
-![Logo](logo.png)
+<style>
+.logo-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px; /* Adjust spacing */
+}
 
-**Guidelines:**
+.logo-item {
+  text-align: center;
+}
+
+.small-logo {
+  width: 150px; /* Adjust as needed */
+  display: block;
+  margin: auto;
+}
+</style>
+
+<div class="logo-container">
+  <div class="logo-item">
+    <img src="/logo.png" alt="Logo" class="small-logo">
+    <p style="background-color: #2b408d; padding: 2px 10px; border-radius: 3px;">Primary Color</p>
+  </div>
+  <div class="logo-item">
+    <img src="/logo_lighter.png" alt="Logo" class="small-logo">
+    <p style="background-color: #5065A4; padding: 2px 10px; border-radius: 3px;">Secondary Color</p>
+  </div>
+  <div class="logo-item">
+    <img src="/logo_accent.png" alt="Logo" class="small-logo">
+    <p style="background-color: #F2C849; padding: 2px 10px; border-radius: 3px;">Accent Color</p>
+  </div>
+</div>
+---
+
+## Logo Guidelines
 
 - **Primary Logo:** Use the full-color logo on light backgrounds for maximum clarity.
 - **Clear Space:** Maintain sufficient space around the logo, typically equal to the height of the letter "o" in the logotype.
@@ -81,9 +113,4 @@ To ensure a seamless user experience, we've incorporated intuitive navigation el
 
 **Home Button:**
 
-- A "Home" button is placed on the design subdomain to direct users back to the main site: [360code.io](https://360code.io).
-
-*Example:*
-
-```html
-<a href="https://360code.io" style="text-decoration: none; color: #2b408d;">Home</a>
+- Press here to go back to main page: [360code.io](https://360code.io).
