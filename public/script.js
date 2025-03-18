@@ -11,12 +11,14 @@ setTimeout(() => {
 
     fetch(timelineEndpoint, {
         headers: {
-            'Accept': 'application/json'
+            'Accept': 'application/json',
+            'Cache-Control': 'no-cache'
         }
     })
         .then(response => {
             console.log('Response status:', response.status);
             console.log('Response headers:', [...response.headers].map(h => `${h[0]}: ${h[1]}`).join(', '));
+            console.log('Content-Type:', response.headers.get('content-type'));
 
             if (!response.ok) {
                 throw new Error(`Network response was not ok: ${response.status}`);
@@ -24,10 +26,14 @@ setTimeout(() => {
 
             const contentType = response.headers.get('content-type');
             if (!contentType || !contentType.includes('application/json')) {
+                console.error('Unexpected content type:', contentType);
                 throw new Error(`Expected JSON but got ${contentType || 'unknown content type'}`);
             }
 
-            return response.json();
+            return response.json().catch(error => {
+                console.error('JSON parsing error:', error);
+                throw new Error('Failed to parse JSON response');
+            });
         })
         .then(data => {
             const timelineDiv = document.getElementById('timeline');
