@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Code2, Github, Twitter, Linkedin } from 'lucide-react';
 
@@ -20,21 +19,21 @@ const Footer: React.FC = () => {
             </p>
             <div className="flex items-center gap-4 mt-6">
               <a 
-                href="#" 
+                href="https://x.com/360code_io" 
                 className="text-muted-foreground hover:text-primary transition-colors"
                 aria-label="GitHub"
               >
                 <Github className="w-5 h-5" />
               </a>
               <a 
-                href="#" 
+                href="https://x.com/360code_io" 
                 className="text-muted-foreground hover:text-primary transition-colors"
                 aria-label="Twitter"
               >
                 <Twitter className="w-5 h-5" />
               </a>
               <a 
-                href="#" 
+                href="https://x.com/360code_io" 
                 className="text-muted-foreground hover:text-primary transition-colors"
                 aria-label="LinkedIn"
               >
@@ -48,16 +47,16 @@ const Footer: React.FC = () => {
               <h3 className="font-semibold mb-4">Product</h3>
               <ul className="space-y-3">
                 <li>
-                  <a href="#features" className="text-sm text-muted-foreground hover:text-primary transition-colors">Features</a>
+                  <a href="/features" className="text-sm text-muted-foreground hover:text-primary transition-colors">Features</a>
                 </li>
                 <li>
-                  <a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">Pricing</a>
+                  <a href="/pricing" className="text-sm text-muted-foreground hover:text-primary transition-colors">Pricing</a>
                 </li>
                 <li>
-                  <a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">Roadmap</a>
+                  <a href="/roadmap" className="text-sm text-muted-foreground hover:text-primary transition-colors">Roadmap</a>
                 </li>
                 <li>
-                  <a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">Documentation</a>
+                  <a href="/documentation" className="text-sm text-muted-foreground hover:text-primary transition-colors">Documentation</a>
                 </li>
               </ul>
             </div>
@@ -66,13 +65,7 @@ const Footer: React.FC = () => {
               <h3 className="font-semibold mb-4">Company</h3>
               <ul className="space-y-3">
                 <li>
-                  <a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">About</a>
-                </li>
-                <li>
-                  <a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">Blog</a>
-                </li>
-                <li>
-                  <a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">Careers</a>
+                  <a href="#about" className="text-sm text-muted-foreground hover:text-primary transition-colors">About</a>
                 </li>
                 <li>
                   <a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">Contact</a>
