@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Menu, X, Github } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Link } from 'react-router-dom';
 
 const Navbar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -24,7 +25,7 @@ const Navbar: React.FC = () => {
       )}
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <a href="#" className="flex items-center gap-2 group">
+        <Link to="/" className="flex items-center gap-2 group">
           <div className="relative flex items-center justify-center w-10 h-10">
             <div className="absolute inset-0 bg-primary/20 rounded-md group-hover:bg-primary/30 transition-colors duration-300"></div>
             <img 
@@ -36,42 +37,42 @@ const Navbar: React.FC = () => {
             />
           </div>
           <span className="text-xl font-semibold tracking-tight">360code.io</span>
-        </a>
+        </Link>
 
         <nav className="hidden md:flex items-center space-x-8">
-          <a
-            href="/features"
+          <Link
+            to="/features"
             className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors"
           >
             Features
-          </a>
-          <a
-            href="/pricing"
+          </Link>
+          <Link
+            to="/pricing"
             className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors"
           >
             Pricing
-          </a>
-          <a
-            href="/roadmap"
+          </Link>
+          <Link
+            to="/roadmap"
             className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors"
           >
             Roadmap
-          </a>
-          <a
-            href="/documentation"
+          </Link>
+          <Link
+            to="/documentation"
             className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors"
           >
             Documentation
-          </a>
+          </Link>
         </nav>
 
         <div className="hidden md:block">
-          <a
-            href="#get-started"
+          <Link
+            to="/#get-started"
             className="gradient-button px-5 py-2 rounded-md font-medium text-white shadow-md hover:shadow-lg transition-shadow"
           >
             Get Started
-          </a>
+          </Link>
         </div>
 
         <button
@@ -86,51 +87,41 @@ const Navbar: React.FC = () => {
       {isMobileMenuOpen && (
         <div className="md:hidden fixed inset-0 top-16 bg-background/95 backdrop-blur-md z-40 p-4">
           <nav className="flex flex-col space-y-6 pt-6">
-            <a
-              href="/features"
+            <Link
+              to="/features"
               className="text-lg font-medium text-foreground/80 hover:text-primary transition-colors"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Features
-            </a>
-            <a
-              href="/pricing"
+            </Link>
+            <Link
+              to="/pricing"
               className="text-lg font-medium text-foreground/80 hover:text-primary transition-colors"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Pricing
-            </a>
-            <a
-              href="/roadmap"
+            </Link>
+            <Link
+              to="/roadmap"
               className="text-lg font-medium text-foreground/80 hover:text-primary transition-colors"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Roadmap
-            </a>
-            <a
-              href="/documentation"
+            </Link>
+            <Link
+              to="/documentation"
               className="text-lg font-medium text-foreground/80 hover:text-primary transition-colors"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Documentation
-            </a>
-            <a
-              href="https://github.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 text-lg font-medium text-foreground/80 hover:text-primary transition-colors"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              <Github className="w-5 h-5" />
-              <span>GitHub</span>
-            </a>
-            <a
-              href="#get-started"
-              className="gradient-button px-5 py-3 rounded-md font-medium text-white shadow-md text-center mt-4"
+            </Link>
+            <Link
+              to="/#get-started"
+              className="gradient-button px-5 py-2 rounded-md font-medium text-white shadow-md hover:shadow-lg transition-shadow inline-block text-center mt-4"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Get Started
-            </a>
+            </Link>
           </nav>
         </div>
       )}
