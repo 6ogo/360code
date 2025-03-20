@@ -91,9 +91,7 @@ const RoadmapPage: React.FC = () => {
       icon: <Rocket className="w-5 h-5 text-primary" />,
       features: [
         "Basic code completion and suggestions",
-        "Multi-language support for major programming languages",
-        "Privacy-focused architecture with local processing",
-        "IDE integrations for VS Code and JetBrains"
+        "Multi-language support for major programming languages"
       ]
     },
     {
@@ -103,11 +101,11 @@ const RoadmapPage: React.FC = () => {
       description: "Expanding capabilities with advanced AI features and deeper integrations.",
       icon: <Sparkles className="w-5 h-5 text-primary" />,
       features: [
+        "Privacy-focused architecture with local processing",
+        "IDE integrations for VS Code and JetBrains",
         "Context-aware code generation",
         "Intelligent refactoring suggestions",
-        "Code review and quality analysis",
-        "Team collaboration features",
-        "Advanced security scanning"
+        "Code review and quality analysis"
       ]
     },
     {
@@ -121,7 +119,9 @@ const RoadmapPage: React.FC = () => {
         "Team performance analytics",
         "Enterprise security enhancements",
         "Advanced permission controls",
-        "Custom integration APIs"
+        "Team collaboration features",
+        "Advanced security scanning",
+
       ]
     },
     {
@@ -135,7 +135,7 @@ const RoadmapPage: React.FC = () => {
         "Developer community platform",
         "Integration with CI/CD pipelines",
         "Custom workflow automation",
-        "Additional language support"
+        "Custom integration APIs"
       ]
     },
     {
