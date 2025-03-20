@@ -90,7 +90,7 @@ const PricingPage: React.FC = () => {
     },
     {
       title: "Pro",
-      price: "$12",
+      price: "$29",
       description: "Ideal for professional developers and small teams.",
       icon: <Diamond className="w-5 h-5 text-primary" />,
       highlighted: true,
@@ -107,7 +107,7 @@ const PricingPage: React.FC = () => {
     },
     {
       title: "Enterprise",
-      price: "$49",
+      price: "~$99",
       description: "For teams and organizations with advanced needs.",
       icon: <Crown className="w-5 h-5 text-primary" />,
       highlighted: false,
