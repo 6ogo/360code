@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X, Send, MessageCircle } from 'lucide-react';
+import Turnstile, { useTurnstile } from 'react-turnstile';
+import { submitContactForm } from '../../api/contact';
 
 interface ContactPopupProps {
   isOpen: boolean;
@@ -14,40 +16,41 @@ const ContactPopup: React.FC<ContactPopupProps> = ({ isOpen, onClose }) => {
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [isRateLimited, setIsRateLimited] = useState(false);
   const [countdown, setCountdown] = useState(0);
-  
+  const turnstile = useTurnstile();
+
   useEffect(() => {
     // Check local storage for rate limiting
     const lastSubmitTime = localStorage.getItem('lastContactSubmitTime');
-    
+
     if (lastSubmitTime) {
       const timeDiff = Date.now() - parseInt(lastSubmitTime, 10);
       const timeLimit = 5 * 60 * 1000; // 5 minutes in milliseconds
-      
+
       if (timeDiff < timeLimit) {
         setIsRateLimited(true);
         const remainingSecs = Math.ceil((timeLimit - timeDiff) / 1000);
         setCountdown(remainingSecs);
       }
     }
-    
+
     // Add escape key listener to close popup
     const handleEscKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         onClose();
       }
     };
-    
+
     window.addEventListener('keydown', handleEscKey);
-    
+
     return () => {
       window.removeEventListener('keydown', handleEscKey);
     };
   }, [onClose]);
-  
+
   // Countdown timer for rate limiting
   useEffect(() => {
     let intervalId: number;
-    
+
     if (isRateLimited && countdown > 0) {
       intervalId = window.setInterval(() => {
         setCountdown(prev => {
@@ -59,88 +62,59 @@ const ContactPopup: React.FC<ContactPopupProps> = ({ isOpen, onClose }) => {
         });
       }, 1000);
     }
-    
+
     return () => {
       if (intervalId) clearInterval(intervalId);
     };
   }, [isRateLimited, countdown]);
-  
+
   const validateEmail = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate fields
     if (!validateEmail(email)) {
       alert('Please enter a valid email address');
       return;
     }
-    
+
     if (!subject.trim()) {
       alert('Please enter a subject');
       return;
     }
-    
+
     if (!message.trim()) {
       alert('Please enter a message');
       return;
     }
-    
-    setIsSubmitting(true);
-    
-    try {
-      // In a real app, you would send the email via an API
-      // For demonstration, we'll simulate a successful submission
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Set rate limiting
-      localStorage.setItem('lastContactSubmitTime', Date.now().toString());
-      setSubmitStatus('success');
-      
-      // Reset form
-      setEmail('');
-      setSubject('');
-      setMessage('');
-      
-      // Close the popup after success message
-      setTimeout(() => {
-        onClose();
-        setSubmitStatus('idle');
-      }, 3000);
-      
-    } catch (error) {
-      console.error('Error sending message:', error);
-      setSubmitStatus('error');
-    } finally {
-      setIsSubmitting(false);
-    }
   };
-  
+
   if (!isOpen) return null;
-  
+
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div 
-        className="relative bg-background rounded-lg shadow-xl max-w-md w-full animate-fade-in p-6" 
+      <div
+        className="relative bg-background rounded-lg shadow-xl max-w-md w-full animate-fade-in p-6"
         onClick={(e) => e.stopPropagation()}
       >
-        <button 
+        <button
           onClick={onClose}
           className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors"
           aria-label="Close"
         >
           <X className="w-5 h-5" />
         </button>
-        
+
         <div className="flex items-center gap-3 mb-6">
           <div className="p-2 rounded-full bg-primary/10">
             <MessageCircle className="w-5 h-5 text-primary" />
           </div>
           <h2 className="text-xl font-semibold">Contact Us</h2>
         </div>
-        
+
         {submitStatus === 'success' ? (
           <div className="text-center py-6">
             <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -160,7 +134,7 @@ const ContactPopup: React.FC<ContactPopupProps> = ({ isOpen, onClose }) => {
             <p className="text-muted-foreground mb-4">
               We couldn't send your message. Please try again later.
             </p>
-            <button 
+            <button
               onClick={() => setSubmitStatus('idle')}
               className="text-primary hover:underline"
             >
@@ -190,7 +164,7 @@ const ContactPopup: React.FC<ContactPopupProps> = ({ isOpen, onClose }) => {
                 required
               />
             </div>
-            
+
             <div>
               <label htmlFor="subject" className="block text-sm font-medium mb-1">
                 Subject
@@ -205,11 +179,8 @@ const ContactPopup: React.FC<ContactPopupProps> = ({ isOpen, onClose }) => {
                 required
               />
             </div>
-            
+
             <div>
-              <label htmlFor="message" className="block text-sm font-medium mb-1">
-                Message
-              </label>
               <textarea
                 id="message"
                 value={message}
@@ -217,6 +188,66 @@ const ContactPopup: React.FC<ContactPopupProps> = ({ isOpen, onClose }) => {
                 className="w-full px-3 py-2 border border-border/50 rounded-md bg-card/30 focus:outline-none focus:ring-1 focus:ring-primary min-h-[120px]"
                 placeholder="Tell us what you need..."
                 required
+              />
+            </div>
+
+            <div className="flex justify-center my-2">
+              <Turnstile
+                sitekey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
+                onVerify={(token) => {
+                  // Validate fields first
+                  if (!validateEmail(email)) {
+                    alert('Please enter a valid email address');
+                    turnstile.reset();
+                    return;
+                  }
+                  
+                  if (!subject.trim()) {
+                    alert('Please enter a subject');
+                    turnstile.reset();
+                    return;
+                  }
+                  
+                  if (!message.trim()) {
+                    alert('Please enter a message');
+                    turnstile.reset();
+                    return;
+                  }
+                  
+                  // Set submitting state
+                  setIsSubmitting(true);
+                  
+                  // Send the form when the token is verified
+                  submitContactForm(email, subject, message, token)
+                    .then((result) => {
+                      if (result.success) {
+                        // Set rate limiting
+                        localStorage.setItem('lastContactSubmitTime', Date.now().toString());
+                        setSubmitStatus('success');
+                        
+                        // Reset form
+                        setEmail('');
+                        setSubject('');
+                        setMessage('');
+                        
+                        // Close the popup after success message
+                        setTimeout(() => {
+                          onClose();
+                          setSubmitStatus('idle');
+                        }, 3000);
+                      } else {
+                        throw new Error(result.error || 'Failed to send message');
+                      }
+                    })
+                    .catch((error) => {
+                      console.error('Error sending message:', error);
+                      setSubmitStatus('error');
+                      turnstile.reset();
+                    })
+                    .finally(() => {
+                      setIsSubmitting(false);
+                    });
+                }}
               />
             </div>
             
@@ -232,10 +263,13 @@ const ContactPopup: React.FC<ContactPopupProps> = ({ isOpen, onClose }) => {
               )}
               {isSubmitting ? 'Sending...' : 'Send Message'}
             </button>
-            
+
             <p className="text-xs text-muted-foreground text-center">
-              By sending this message, you agree to our 
-              <a href="#" className="text-primary hover:underline ml-1">Privacy Policy</a>.
+              By sending this message, you agree to our{' '}
+              <a href="#" className="text-primary hover:underline ml-1">
+                Privacy Policy
+              </a>
+              .
             </p>
           </form>
         )}
