@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Code2, Github, Twitter, Linkedin, X } from 'lucide-react';
+import { FaXTwitter } from 'react-icons/fa6';
 import ContactPopup from './ContactPopup';
 
 const Footer: React.FC = () => {
@@ -33,8 +34,9 @@ const Footer: React.FC = () => {
                 className="text-muted-foreground hover:text-primary transition-colors"
                 aria-label="X"
               >
-                <X size={16} />
-              </a>            </div>
+                <FaXTwitter size={16} />
+              </a>
+            </div>
           </div>
 
           <div className="md:col-span-2 grid grid-cols-2 md:grid-cols-3 gap-10 md:gap-6 lg:gap-12">
