@@ -68,6 +68,11 @@ const Footer: React.FC = () => {
                 <li>
                   <Link to="/documentation" className="text-sm text-muted-foreground hover:text-primary transition-colors">Documentation</Link>
                 </li>
+                <li>
+                  <a href="https://app.360code.io" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                    Test the app!
+                  </a>
+                </li>
               </ul>
             </div>
 
@@ -75,7 +80,7 @@ const Footer: React.FC = () => {
               <h3 className="font-semibold mb-4">Company</h3>
               <ul className="space-y-3">
                 <li>
-                  <Link to="/about" className="text-sm text-muted-foreground hover:text-primary transition-colors">About</Link>
+                  <a href="/about" className="text-sm text-muted-foreground hover:text-primary transition-colors">About</a>
                 </li>
                 <li>
                   <button
