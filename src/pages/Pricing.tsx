@@ -143,7 +143,7 @@ const PricingPage: React.FC = () => {
     },
     {
       title: "Pro",
-      price: "$19",
+      price: "$35",
       description: "Great for individual developers seeking enhanced productivity.",
       icon: <Diamond className="w-5 h-5 text-primary" />,
       highlighted: false,
@@ -153,7 +153,6 @@ const PricingPage: React.FC = () => {
         "Context-aware suggestions",
         "Multi-project support",
         "Code refactoring assistance", 
-        "Email support",
         "Extended daily queries"
       ],
       buttonText: "Upgrade to Pro",
@@ -163,7 +162,7 @@ const PricingPage: React.FC = () => {
     },
     {
       title: "Pro+",
-      price: "$29",
+      price: "49",
       description: "Ideal for professional developers and small teams.",
       icon: <Crown className="w-5 h-5 text-primary" />,
       highlighted: true,
@@ -173,7 +172,6 @@ const PricingPage: React.FC = () => {
         "Team collaboration features",
         "Custom integration options",
         "Priority email support",
-        "Unlimited daily queries",
         "Advanced security features"
       ],
       buttonText: "Upgrade to Pro+",

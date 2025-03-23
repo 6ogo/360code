@@ -19,10 +19,10 @@ interface DocCategoryProps {
 
 const DocCategory: React.FC<DocCategoryProps> = ({ title, icon, sections, id }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  
+
   return (
     <div className="mb-8">
-      <button 
+      <button
         onClick={() => setIsExpanded(!isExpanded)}
         className="w-full flex items-center justify-between p-4 rounded-lg border border-border/50 bg-card/50 backdrop-blur-sm hover:bg-card/80 transition-colors"
       >
@@ -35,11 +35,11 @@ const DocCategory: React.FC<DocCategoryProps> = ({ title, icon, sections, id }) 
           isExpanded && "rotate-90"
         )} />
       </button>
-      
+
       {isExpanded && (
         <div className="pl-4 border-l border-border/50 mt-2 ml-4 space-y-4 py-2">
           {sections.map((section) => (
-            <a 
+            <a
               key={section.id}
               href={`#${section.id}`}
               className="block p-3 rounded-md hover:bg-primary/5 transition-colors text-sm"
@@ -58,7 +58,7 @@ const DocCategory: React.FC<DocCategoryProps> = ({ title, icon, sections, id }) 
 
 const DocumentationPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  
+
   const docCategories: DocCategoryProps[] = [
     {
       id: 'getting-started',
@@ -173,20 +173,20 @@ const DocumentationPage: React.FC = () => {
   ];
 
   // Filter categories and sections based on search query
-  const filteredCategories = searchQuery 
+  const filteredCategories = searchQuery
     ? docCategories.map(category => ({
-        ...category,
-        sections: category.sections.filter(section => 
-          section.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          section.content.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-      })).filter(category => category.sections.length > 0)
+      ...category,
+      sections: category.sections.filter(section =>
+        section.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        section.content.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    })).filter(category => category.sections.length > 0)
     : docCategories;
 
   React.useEffect(() => {
     // Initialize animation observers
     const animatedElements = document.querySelectorAll('.animate-fade-in, .animate-fade-in-delay-1, .animate-fade-in-delay-2, .animate-fade-in-delay-3, .animate-fade-in-delay-4');
-    
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach(entry => {
@@ -203,11 +203,11 @@ const DocumentationPage: React.FC = () => {
         rootMargin: '0px 0px -10% 0px'
       }
     );
-    
+
     animatedElements.forEach(element => {
       observer.observe(element);
     });
-    
+
     return () => {
       animatedElements.forEach(element => {
         observer.unobserve(element);
@@ -215,6 +215,10 @@ const DocumentationPage: React.FC = () => {
     };
   }, []);
 
+  function handleContactUs(event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
+    event.preventDefault();
+    window.location.href = '/contact-support';
+  }
   return (
     <div className="min-h-screen bg-background text-foreground w-full overflow-hidden">
       <Navbar />
@@ -222,7 +226,7 @@ const DocumentationPage: React.FC = () => {
         <section className="relative py-20 md:py-32 mt-16">
           <div className="absolute inset-0 grid-pattern opacity-20"></div>
           <div className="absolute top-1/4 right-0 blue-glow opacity-30 animate-pulse-slow"></div>
-          
+
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12 md:mb-16">
               <h1 className="text-4xl md:text-5xl font-bold mb-6 opacity-0 animate-fade-in">
@@ -231,7 +235,7 @@ const DocumentationPage: React.FC = () => {
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto opacity-0 animate-fade-in animation-delay-300">
                 Comprehensive guides and references to help you get the most out of 360code.io
               </p>
-              
+
               <div className="relative max-w-xl mx-auto mt-10 opacity-0 animate-fade-in animation-delay-600">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Search className="h-5 w-5 text-muted-foreground" />
@@ -253,10 +257,10 @@ const DocumentationPage: React.FC = () => {
                     <Book className="w-5 h-5 text-primary" />
                     Table of Contents
                   </h2>
-                  
+
                   <nav className="space-y-1">
                     {docCategories.map(category => (
-                      <a 
+                      <a
                         key={category.id}
                         href={`#${category.id}`}
                         className="block py-2 px-3 text-sm rounded-md hover:bg-primary/5 transition-colors"
@@ -265,7 +269,7 @@ const DocumentationPage: React.FC = () => {
                       </a>
                     ))}
                   </nav>
-                  
+
                   <div className="mt-8 p-4 border border-border/50 rounded-lg bg-card/30 backdrop-blur-sm">
                     <h3 className="font-medium flex items-center gap-2 mb-3">
                       <HelpCircle className="w-4 h-4 text-primary" />
@@ -274,13 +278,16 @@ const DocumentationPage: React.FC = () => {
                     <p className="text-sm text-muted-foreground mb-3">
                       Can't find what you're looking for or need personalized assistance?
                     </p>
-                    <button className="w-full py-2 text-sm text-center bg-primary/10 text-primary hover:bg-primary/20 rounded-md transition-colors">
+                    <button
+                      className="gradient-button px-6 py-2 rounded-md font-medium text-white shadow-md hover:shadow-lg transition-shadow"
+                      onClick={handleContactUs}
+                    >
                       Contact Support
                     </button>
                   </div>
                 </div>
               </div>
-              
+
               <div className="lg:col-span-2 opacity-0 animate-fade-in animation-delay-1200">
                 <div className="space-y-12">
                   {filteredCategories.map(category => (
@@ -289,7 +296,7 @@ const DocumentationPage: React.FC = () => {
                         {category.icon}
                         {category.title}
                       </h2>
-                      
+
                       <div className="space-y-4">
                         {category.sections.map(section => (
                           <div key={section.id} id={section.id} className="p-5 rounded-lg border border-border/50 bg-card/30 backdrop-blur-sm">
