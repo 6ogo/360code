@@ -72,7 +72,7 @@ export async function handleStripeWebhook(req, res) {
         const subscriptionId = session.subscription;
 
         // Fetch the subscription to get the price ID and product
-        const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+        const subscription = await stripe.subscriptions.retrieve(subscriptionId as string);
         const priceId = subscription.items.data[0].price.id;
 
         // Determine subscription tier based on price ID
