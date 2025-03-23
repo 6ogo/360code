@@ -1,10 +1,14 @@
-
 import React from 'react';
 import { ArrowRight, Terminal, Code } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import CodeSnippet from './CodeSnippet';
 
 const Hero: React.FC = () => {
+  const handleRedirectToApp = (e: React.MouseEvent) => {
+    e.preventDefault();
+    window.location.href = 'https://app.360code.io/auth';
+  };
+
   return (
     <section className="relative pt-28 pb-20 md:pt-36 md:pb-32 overflow-hidden">
       {/* Background patterns */}
@@ -32,7 +36,8 @@ const Hero: React.FC = () => {
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4 opacity-0 animate-fade-in-delay-2">
             <a 
-              href="#get-started" 
+              href="#" 
+              onClick={handleRedirectToApp}
               className={cn(
                 "gradient-button px-7 py-3 rounded-md font-medium text-white",
                 "flex items-center gap-2 shadow-glow hover:shadow-glow-lg transition-shadow"

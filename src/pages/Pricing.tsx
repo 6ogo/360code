@@ -1,12 +1,9 @@
 // src/pages/Pricing.tsx
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/landing/Navbar';
 import Footer from '@/components/landing/Footer';
 import { Check, Zap, Diamond, Crown } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useAuth } from '@/contexts/AuthContext';
-import { createCheckoutSession, simulateSubscriptionUpgrade } from '@/api/stripe';
 import ContactPopup from '@/components/landing/ContactPopup';
 
 interface PricingTierProps {
@@ -18,9 +15,7 @@ interface PricingTierProps {
   icon: React.ReactNode;
   delay: string;
   buttonText: string;
-  priceId?: string;
   onButtonClick: () => void;
-  isCurrentPlan?: boolean;
 }
 
 const PricingTier: React.FC<PricingTierProps> = ({ 
@@ -32,9 +27,7 @@ const PricingTier: React.FC<PricingTierProps> = ({
   icon,
   delay,
   buttonText,
-  priceId,
-  onButtonClick,
-  isCurrentPlan = false
+  onButtonClick
 }) => {
   return (
     <div className={cn(
@@ -73,63 +66,24 @@ const PricingTier: React.FC<PricingTierProps> = ({
       <button 
         className={cn(
           "py-2 rounded-md font-medium w-full transition-all",
-          isCurrentPlan 
-            ? "bg-green-500/20 text-green-500 cursor-default"
-            : highlighted
-              ? "gradient-button text-white shadow-md hover:shadow-lg"
-              : "bg-primary/10 text-primary hover:bg-primary/20"
+          highlighted
+            ? "gradient-button text-white shadow-md hover:shadow-lg"
+            : "bg-primary/10 text-primary hover:bg-primary/20"
         )}
         onClick={onButtonClick}
-        disabled={isCurrentPlan}
       >
-        {isCurrentPlan ? "Current Plan" : buttonText}
+        {buttonText}
       </button>
     </div>
   );
 };
 
 const PricingPage: React.FC = () => {
-  const { user, isAuthenticated, subscriptionTier, refreshSubscription } = useAuth();
-  const [isLoading, setIsLoading] = useState(false);
   const [isContactPopupOpen, setIsContactPopupOpen] = useState(false);
-  const navigate = useNavigate();
 
-  const handleSubscribe = async (priceId: string, tier: 'basic' | 'pro' | 'pro_plus') => {
-    if (!isAuthenticated) {
-      // Redirect to login with return URL
-      navigate(`/login?returnUrl=${encodeURIComponent('/pricing')}`);
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-      
-      // For development/demo purpose, simulate subscription upgrade
-      if (process.env.NODE_ENV === 'development') {
-        await simulateSubscriptionUpgrade(tier);
-        await refreshSubscription();
-        navigate('/subscription-success?session_id=dev_session_123');
-        return;
-      }
-      
-      // In production, use Stripe checkout
-      if (user) {
-        await createCheckoutSession(priceId, user.id);
-      }
-    } catch (error) {
-      console.error('Error creating checkout session:', error);
-      alert('Failed to create checkout session. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleContactSales = () => {
-    if (!isAuthenticated) {
-      navigate(`/login?returnUrl=${encodeURIComponent('/pricing')}`);
-      return;
-    }
-    setIsContactPopupOpen(true);
+  // Direct redirect to app auth page
+  const handleRedirectToApp = () => {
+    window.location.href = 'https://app.360code.io/auth';
   };
 
   const handleContactUs = () => {
@@ -150,16 +104,8 @@ const PricingPage: React.FC = () => {
         "Community support",
         "Single project support"
       ],
-      buttonText: isAuthenticated ? "Get Started" : "Experience 360",
-      priceId: "", // No price ID for the free tier
-      onButtonClick: () => {
-        if (!isAuthenticated) {
-          navigate(`/login?returnUrl=${encodeURIComponent('/')}`);
-        } else {
-          navigate('/');
-        }
-      },
-      isCurrentPlan: isAuthenticated && (subscriptionTier === 'basic' || subscriptionTier === null)
+      buttonText: "Try it Free",
+      onButtonClick: handleRedirectToApp
     },
     {
       title: "Pro",
@@ -175,13 +121,8 @@ const PricingPage: React.FC = () => {
         "Code refactoring assistance", 
         "Extended daily queries"
       ],
-      buttonText: "Upgrade to Pro",
-      priceId: import.meta.env.VITE_STRIPE_PRO_PRICE_ID || 'price_pro',
-      onButtonClick: () => handleSubscribe(
-        import.meta.env.VITE_STRIPE_PRO_PRICE_ID || 'price_pro', 
-        'pro'
-      ),
-      isCurrentPlan: subscriptionTier === 'pro'
+      buttonText: "Get Started",
+      onButtonClick: handleRedirectToApp
     },
     {
       title: "Pro+",
@@ -197,13 +138,8 @@ const PricingPage: React.FC = () => {
         "Priority email support",
         "Advanced security features"
       ],
-      buttonText: "Upgrade to Pro+",
-      priceId: import.meta.env.VITE_STRIPE_PRO_PLUS_PRICE_ID || 'price_pro_plus',
-      onButtonClick: () => handleSubscribe(
-        import.meta.env.VITE_STRIPE_PRO_PLUS_PRICE_ID || 'price_pro_plus', 
-        'pro_plus'
-      ),
-      isCurrentPlan: subscriptionTier === 'pro_plus'
+      buttonText: "Get Started",
+      onButtonClick: handleRedirectToApp
     },
     {
       title: "Enterprise",
@@ -232,6 +168,10 @@ const PricingPage: React.FC = () => {
     "animation-delay-900",
     "animation-delay-1200"
   ];
+
+  function handleContactSales() {
+    setIsContactPopupOpen(true);
+  }
 
   React.useEffect(() => {
     // Initialize animation observers
@@ -281,16 +221,6 @@ const PricingPage: React.FC = () => {
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto opacity-0 animate-fade-in animation-delay-300">
                 Choose the plan that's right for you and start coding smarter with 360code.io
               </p>
-              {!isAuthenticated && (
-                <p className="mt-4 text-sm text-primary opacity-0 animate-fade-in animation-delay-600">
-                  <button 
-                    onClick={() => navigate('/login?returnUrl=/pricing')}
-                    className="underline hover:text-primary/80"
-                  >
-                    Sign in
-                  </button> to manage your subscription
-                </p>
-              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-6">
@@ -304,10 +234,8 @@ const PricingPage: React.FC = () => {
                   highlighted={tier.highlighted}
                   icon={tier.icon}
                   delay={delays[index % delays.length]}
-                  buttonText={isLoading ? 'Loading...' : tier.buttonText}
-                  priceId={tier.priceId}
+                  buttonText={tier.buttonText}
                   onButtonClick={tier.onButtonClick}
-                  isCurrentPlan={tier.isCurrentPlan}
                 />
               ))}
             </div>

@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, LogIn, ExternalLink } from 'lucide-react';
+import { Menu, X, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
 
 const Navbar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -18,21 +16,10 @@ const Navbar: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleLogin = () => {
-    navigate('/login');
+  const handleGoToApp = () => {
+    // Direct redirect to app auth page
+    window.location.href = 'https://app.360code.io/auth';
   };
-
-  const handleGoToApp = async () => {
-    try {
-      // Import and use the goToApp utility function
-      const { goToApp } = await import('@/utils/navigation');
-      await goToApp();
-    } catch (error) {
-      console.error('Error navigating to app:', error);
-      window.location.href = 'https://app.360code.io';
-    }
-  };
-
 
   return (
     <header
@@ -84,41 +71,22 @@ const Navbar: React.FC = () => {
             Documentation
           </Link>
 
-          {isAuthenticated ? (
-            <button
-              onClick={handleGoToApp}
-              className="flex items-center gap-1.5 gradient-button px-4 py-1.5 rounded-md font-medium text-white text-sm"
-            >
-              Go to App
-              <ExternalLink className="w-3.5 h-3.5" />
-            </button>
-          ) : (
-            <button
-              onClick={handleLogin}
-              className="flex items-center gap-1.5 px-4 py-1.5 rounded-md border border-border font-medium text-foreground/90 text-sm hover:bg-background/80 transition-colors"
-            >
-              Sign In
-              <LogIn className="w-3.5 h-3.5" />
-            </button>
-          )}
+          <button
+            onClick={handleGoToApp}
+            className="flex items-center gap-1.5 gradient-button px-4 py-1.5 rounded-md font-medium text-white text-sm"
+          >
+            Go to App
+            <ExternalLink className="w-3.5 h-3.5" />
+          </button>
         </nav>
 
         <div className="flex items-center gap-4 md:hidden">
-          {isAuthenticated ? (
-            <button
-              onClick={handleGoToApp}
-              className="flex items-center gap-1.5 gradient-button px-3 py-1.5 rounded-md font-medium text-white text-sm"
-            >
-              <ExternalLink className="w-3.5 h-3.5" />
-            </button>
-          ) : (
-            <button
-              onClick={handleLogin}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-border font-medium text-foreground/90 text-sm"
-            >
-              <LogIn className="w-3.5 h-3.5" />
-            </button>
-          )}
+          <button
+            onClick={handleGoToApp}
+            className="flex items-center gap-1.5 gradient-button px-3 py-1.5 rounded-md font-medium text-white text-sm"
+          >
+            <ExternalLink className="w-3.5 h-3.5" />
+          </button>
 
           <button
             className="text-foreground"
@@ -162,27 +130,15 @@ const Navbar: React.FC = () => {
               Documentation
             </Link>
 
-            {isAuthenticated ? (
-              <button
-                onClick={() => {
-                  setIsMobileMenuOpen(false);
-                  handleGoToApp();
-                }}
-                className="gradient-button px-5 py-2 rounded-md font-medium text-white shadow-md hover:shadow-lg transition-shadow inline-block text-center mt-4"
-              >
-                Go to App
-              </button>
-            ) : (
-              <button
-                onClick={() => {
-                  setIsMobileMenuOpen(false);
-                  handleLogin();
-                }}
-                className="border border-border px-5 py-2 rounded-md font-medium text-foreground shadow-md hover:shadow-lg transition-shadow inline-block text-center mt-4 bg-background"
-              >
-                Sign In
-              </button>
-            )}
+            <button
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                handleGoToApp();
+              }}
+              className="gradient-button px-5 py-2 rounded-md font-medium text-white shadow-md hover:shadow-lg transition-shadow inline-block text-center mt-4"
+            >
+              Go to App
+            </button>
           </nav>
         </div>
       )}

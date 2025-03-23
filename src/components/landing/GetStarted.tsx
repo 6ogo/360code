@@ -1,9 +1,13 @@
-
 import React from 'react';
 import { Terminal, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const GetStarted: React.FC = () => {
+  const handleRedirectToApp = (e: React.FormEvent) => {
+    e.preventDefault();
+    window.location.href = 'https://app.360code.io/auth';
+  };
+
   return (
     <section id="get-started" className="relative py-20 md:py-32 bg-primary/5">
       <div className="absolute inset-0 dot-pattern opacity-20"></div>
@@ -25,13 +29,12 @@ const GetStarted: React.FC = () => {
         </p>
 
         <div className="max-w-xl mx-auto glass-card p-10 rounded-lg border border-white/5 shadow-2xl opacity-0 animate-fade-in animation-delay-900">
-          <form className="space-y-4">
+          <form className="space-y-4" onSubmit={handleRedirectToApp}>
             <div className="flex flex-col sm:flex-row gap-4">
               <input 
                 type="email" 
                 placeholder="Your email address" 
                 className="flex h-12 w-full rounded-md border border-border/50 bg-background px-4 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                required
               />
               <button
                 type="submit"
