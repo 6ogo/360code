@@ -66,14 +66,6 @@ const Navbar: React.FC = () => {
           </Link>
         </nav>
 
-        <div className="hidden md:block">
-          <a href="#get-started"
-            className="gradient-button px-5 py-2 rounded-md font-medium text-white shadow-md hover:shadow-lg transition-shadow"
-          >
-            Get Started
-          </Link>
-        </div>
-
         <button
           className="md:hidden text-foreground"
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
