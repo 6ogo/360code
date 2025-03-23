@@ -38,7 +38,7 @@ const Hero: React.FC = () => {
                 "flex items-center gap-2 shadow-glow hover:shadow-glow-lg transition-shadow"
               )}
             >
-              Get Started
+              Experience 360
               <ArrowRight className="w-4 h-4" />
             </a>
             <a 
