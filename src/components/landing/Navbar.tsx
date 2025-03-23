@@ -67,8 +67,7 @@ const Navbar: React.FC = () => {
         </nav>
 
         <div className="hidden md:block">
-          <Link
-            to="/#get-started"
+          <a href="#get-started"
             className="gradient-button px-5 py-2 rounded-md font-medium text-white shadow-md hover:shadow-lg transition-shadow"
           >
             Get Started
