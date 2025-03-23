@@ -1,6 +1,6 @@
 // src/contexts/AuthContext.tsx
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { createClient, SupabaseClient, User } from '@supabase/supabase-js';
+import { createClient, SupabaseClient, User, Provider } from '@supabase/supabase-js';
 import { getUserSubscription } from '@/api/stripe';
 
 interface AuthContextType {
@@ -9,9 +9,11 @@ interface AuthContextType {
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string) => Promise<void>;
+  signInWithProvider: (provider: Provider) => Promise<void>;
   signOut: () => Promise<void>;
   isAuthenticated: boolean;
   subscriptionTier: 'basic' | 'pro' | 'pro_plus' | null;
+  refreshSubscription: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -29,8 +31,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   useEffect(() => {
     // Initialize Supabase client
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-    const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    
+    if (!supabaseUrl || !supabaseKey) {
+      console.error('Supabase credentials not found in environment variables');
+      setIsLoading(false);
+      return;
+    }
+    
     const client = createClient(supabaseUrl, supabaseKey);
     setSupabase(client);
 
@@ -45,15 +54,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           
           // Fetch user's subscription
           if (user) {
-            const subscription = await getUserSubscription(user.id);
-            setSubscription(subscription);
-            
-            // Set subscription tier
-            if (subscription?.subscription_tier) {
-              setSubscriptionTier(subscription.subscription_tier);
-            } else {
-              setSubscriptionTier('basic'); // Default to basic
-            }
+            await fetchUserSubscription(user.id);
           }
         }
       } catch (error) {
@@ -74,15 +75,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             
             // Fetch user's subscription
             if (session.user) {
-              const userSubscription = await getUserSubscription(session.user.id);
-              setSubscription(userSubscription);
-              
-              // Set subscription tier
-              if (userSubscription?.subscription_tier) {
-                setSubscriptionTier(userSubscription.subscription_tier);
-              } else {
-                setSubscriptionTier('basic'); // Default to basic
-              }
+              await fetchUserSubscription(session.user.id);
             }
           } else if (event === 'SIGNED_OUT') {
             setUser(null);
@@ -98,8 +91,32 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, []);
 
+  const fetchUserSubscription = async (userId: string) => {
+    try {
+      const userSubscription = await getUserSubscription(userId);
+      setSubscription(userSubscription);
+      
+      // Set subscription tier
+      if (userSubscription?.subscription_tier) {
+        setSubscriptionTier(userSubscription.subscription_tier);
+      } else {
+        setSubscriptionTier('basic'); // Default to basic
+      }
+    } catch (error) {
+      console.error('Error fetching user subscription:', error);
+      setSubscriptionTier('basic'); // Default to basic on error
+    }
+  };
+
+  const refreshSubscription = async () => {
+    if (user) {
+      await fetchUserSubscription(user.id);
+    }
+  };
+
   const signIn = async (email: string, password: string) => {
-    if (!supabase) return;
+    if (!supabase) throw new Error('Supabase client not initialized');
+    
     setIsLoading(true);
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -113,7 +130,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   const signUp = async (email: string, password: string) => {
-    if (!supabase) return;
+    if (!supabase) throw new Error('Supabase client not initialized');
+    
     setIsLoading(true);
     try {
       const { error } = await supabase.auth.signUp({ email, password });
@@ -126,8 +144,29 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
+  const signInWithProvider = async (provider: Provider) => {
+    if (!supabase) throw new Error('Supabase client not initialized');
+    
+    setIsLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/auth-callback`
+        }
+      });
+      if (error) throw error;
+    } catch (error) {
+      console.error(`Error signing in with ${provider}:`, error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const signOut = async () => {
-    if (!supabase) return;
+    if (!supabase) throw new Error('Supabase client not initialized');
+    
     setIsLoading(true);
     try {
       const { error } = await supabase.auth.signOut();
@@ -146,9 +185,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     isLoading,
     signIn,
     signUp,
+    signInWithProvider,
     signOut,
     isAuthenticated: !!user,
     subscriptionTier,
+    refreshSubscription
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

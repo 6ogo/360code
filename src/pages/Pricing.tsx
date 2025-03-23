@@ -1,11 +1,12 @@
 // src/pages/Pricing.tsx
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '@/components/landing/Navbar';
 import Footer from '@/components/landing/Footer';
 import { Check, Zap, Diamond, Crown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
-import { createCheckoutSession } from '@/api/stripe';
+import { createCheckoutSession, simulateSubscriptionUpgrade } from '@/api/stripe';
 import ContactPopup from '@/components/landing/ContactPopup';
 
 interface PricingTierProps {
@@ -88,20 +89,33 @@ const PricingTier: React.FC<PricingTierProps> = ({
 };
 
 const PricingPage: React.FC = () => {
-  const { user, isAuthenticated, subscriptionTier } = useAuth();
+  const { user, isAuthenticated, subscriptionTier, refreshSubscription } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [isContactPopupOpen, setIsContactPopupOpen] = useState(false);
+  const navigate = useNavigate();
 
-  const handleSubscribe = async (priceId: string) => {
+  const handleSubscribe = async (priceId: string, tier: 'basic' | 'pro' | 'pro_plus') => {
     if (!isAuthenticated) {
-      // Redirect to login or show login modal
-      alert('Please log in to subscribe');
+      // Redirect to login with return URL
+      navigate(`/login?returnUrl=${encodeURIComponent('/pricing')}`);
       return;
     }
 
     try {
       setIsLoading(true);
-      await createCheckoutSession(priceId, user!.id);
+      
+      // For development/demo purpose, simulate subscription upgrade
+      if (process.env.NODE_ENV === 'development') {
+        await simulateSubscriptionUpgrade(tier);
+        await refreshSubscription();
+        navigate('/subscription-success?session_id=dev_session_123');
+        return;
+      }
+      
+      // In production, use Stripe checkout
+      if (user) {
+        await createCheckoutSession(priceId, user.id);
+      }
     } catch (error) {
       console.error('Error creating checkout session:', error);
       alert('Failed to create checkout session. Please try again.');
@@ -111,7 +125,11 @@ const PricingPage: React.FC = () => {
   };
 
   const handleContactSales = () => {
-    window.location.href = 'mailto:sales@360code.io';
+    if (!isAuthenticated) {
+      navigate(`/login?returnUrl=${encodeURIComponent('/pricing')}`);
+      return;
+    }
+    setIsContactPopupOpen(true);
   };
 
   const handleContactUs = () => {
@@ -132,14 +150,16 @@ const PricingPage: React.FC = () => {
         "Community support",
         "Single project support"
       ],
-      buttonText: "Get Started",
+      buttonText: isAuthenticated ? "Get Started" : "Experience 360",
       priceId: "", // No price ID for the free tier
       onButtonClick: () => {
         if (!isAuthenticated) {
-          alert('Please log in to continue');
+          navigate(`/login?returnUrl=${encodeURIComponent('/')}`);
+        } else {
+          navigate('/');
         }
       },
-      isCurrentPlan: subscriptionTier === 'basic' || subscriptionTier === null
+      isCurrentPlan: isAuthenticated && (subscriptionTier === 'basic' || subscriptionTier === null)
     },
     {
       title: "Pro",
@@ -156,8 +176,11 @@ const PricingPage: React.FC = () => {
         "Extended daily queries"
       ],
       buttonText: "Upgrade to Pro",
-      priceId: import.meta.env.VITE_STRIPE_PRO_PRICE_ID,
-      onButtonClick: () => handleSubscribe(import.meta.env.VITE_STRIPE_PRO_PRICE_ID),
+      priceId: import.meta.env.VITE_STRIPE_PRO_PRICE_ID || 'price_pro',
+      onButtonClick: () => handleSubscribe(
+        import.meta.env.VITE_STRIPE_PRO_PRICE_ID || 'price_pro', 
+        'pro'
+      ),
       isCurrentPlan: subscriptionTier === 'pro'
     },
     {
@@ -175,8 +198,11 @@ const PricingPage: React.FC = () => {
         "Advanced security features"
       ],
       buttonText: "Upgrade to Pro+",
-      priceId: import.meta.env.VITE_STRIPE_PRO_PLUS_PRICE_ID,
-      onButtonClick: () => handleSubscribe(import.meta.env.VITE_STRIPE_PRO_PLUS_PRICE_ID),
+      priceId: import.meta.env.VITE_STRIPE_PRO_PLUS_PRICE_ID || 'price_pro_plus',
+      onButtonClick: () => handleSubscribe(
+        import.meta.env.VITE_STRIPE_PRO_PLUS_PRICE_ID || 'price_pro_plus', 
+        'pro_plus'
+      ),
       isCurrentPlan: subscriptionTier === 'pro_plus'
     },
     {
@@ -257,7 +283,12 @@ const PricingPage: React.FC = () => {
               </p>
               {!isAuthenticated && (
                 <p className="mt-4 text-sm text-primary opacity-0 animate-fade-in animation-delay-600">
-                  Sign in to manage your subscription
+                  <button 
+                    onClick={() => navigate('/login?returnUrl=/pricing')}
+                    className="underline hover:text-primary/80"
+                  >
+                    Sign in
+                  </button> to manage your subscription
                 </p>
               )}
             </div>

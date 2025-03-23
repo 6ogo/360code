@@ -12,7 +12,10 @@ import Roadmap from "./pages/Roadmap";
 import Documentation from "./pages/Documentation";
 import SubscriptionSuccess from "./pages/SubscriptionSuccess";
 import NotFound from "./pages/NotFound";
+import AuthPage from "./pages/AuthPage";
+import AuthCallback from "./pages/AuthCallback";
 
+// Create a new query client
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -29,6 +32,12 @@ const App = () => (
             <Route path="/roadmap" element={<Roadmap />} />
             <Route path="/documentation" element={<Documentation />} />
             <Route path="/subscription-success" element={<SubscriptionSuccess />} />
+            
+            {/* Auth routes */}
+            <Route path="/login" element={<AuthPage />} />
+            <Route path="/signup" element={<AuthPage />} />
+            <Route path="/auth-callback" element={<AuthCallback />} />
+            
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
