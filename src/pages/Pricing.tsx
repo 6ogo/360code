@@ -162,7 +162,7 @@ const PricingPage: React.FC = () => {
     },
     {
       title: "Pro+",
-      price: "49",
+      price: "$49",
       description: "Ideal for professional developers and small teams.",
       icon: <Crown className="w-5 h-5 text-primary" />,
       highlighted: true,
