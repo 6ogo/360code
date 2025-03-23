@@ -1,8 +1,12 @@
-import React from 'react';
+// src/pages/Pricing.tsx
+import React, { useState } from 'react';
 import Navbar from '@/components/landing/Navbar';
 import Footer from '@/components/landing/Footer';
 import { Check, Zap, Diamond, Crown } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
+import { createCheckoutSession } from '@/api/stripe';
+import ContactPopup from '@/components/landing/ContactPopup';
 
 interface PricingTierProps {
   title: string;
@@ -13,6 +17,9 @@ interface PricingTierProps {
   icon: React.ReactNode;
   delay: string;
   buttonText: string;
+  priceId?: string;
+  onButtonClick: () => void;
+  isCurrentPlan?: boolean;
 }
 
 const PricingTier: React.FC<PricingTierProps> = ({ 
@@ -23,7 +30,10 @@ const PricingTier: React.FC<PricingTierProps> = ({
   highlighted, 
   icon,
   delay,
-  buttonText
+  buttonText,
+  priceId,
+  onButtonClick,
+  isCurrentPlan = false
 }) => {
   return (
     <div className={cn(
@@ -59,22 +69,58 @@ const PricingTier: React.FC<PricingTierProps> = ({
         ))}
       </ul>
       
-      <button className={cn(
-        "py-2 rounded-md font-medium w-full transition-all",
-        highlighted
-          ? "gradient-button text-white shadow-md hover:shadow-lg"
-          : "bg-primary/10 text-primary hover:bg-primary/20"
-      )}>
-        {buttonText}
+      <button 
+        className={cn(
+          "py-2 rounded-md font-medium w-full transition-all",
+          isCurrentPlan 
+            ? "bg-green-500/20 text-green-500 cursor-default"
+            : highlighted
+              ? "gradient-button text-white shadow-md hover:shadow-lg"
+              : "bg-primary/10 text-primary hover:bg-primary/20"
+        )}
+        onClick={onButtonClick}
+        disabled={isCurrentPlan}
+      >
+        {isCurrentPlan ? "Current Plan" : buttonText}
       </button>
     </div>
   );
 };
 
 const PricingPage: React.FC = () => {
+  const { user, isAuthenticated, subscriptionTier } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const [isContactPopupOpen, setIsContactPopupOpen] = useState(false);
+
+  const handleSubscribe = async (priceId: string) => {
+    if (!isAuthenticated) {
+      // Redirect to login or show login modal
+      alert('Please log in to subscribe');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      await createCheckoutSession(priceId, user!.id);
+    } catch (error) {
+      console.error('Error creating checkout session:', error);
+      alert('Failed to create checkout session. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleContactSales = () => {
+    window.location.href = 'mailto:sales@360code.io';
+  };
+
+  const handleContactUs = () => {
+    setIsContactPopupOpen(true);
+  };
+
   const pricingTiers = [
     {
-      title: "Free",
+      title: "Basic",
       price: "Free",
       description: "Perfect for personal projects and learning.",
       icon: <Zap className="w-5 h-5 text-primary" />,
@@ -86,49 +132,81 @@ const PricingPage: React.FC = () => {
         "Community support",
         "Single project support"
       ],
-      buttonText: "Get Started"
+      buttonText: "Get Started",
+      priceId: "", // No price ID for the free tier
+      onButtonClick: () => {
+        if (!isAuthenticated) {
+          alert('Please log in to continue');
+        }
+      },
+      isCurrentPlan: subscriptionTier === 'basic' || subscriptionTier === null
     },
     {
       title: "Pro",
-      price: "$29",
-      description: "Ideal for professional developers and small teams.",
+      price: "$19",
+      description: "Great for individual developers seeking enhanced productivity.",
       icon: <Diamond className="w-5 h-5 text-primary" />,
-      highlighted: true,
+      highlighted: false,
       features: [
-        "Everything in Free",
-        "Advanced code generation",
+        "Everything in Basic",
+        "Advanced code completion",
         "Context-aware suggestions",
         "Multi-project support",
         "Code refactoring assistance", 
-        "Priority email support",
-        "Unlimited daily queries"
+        "Email support",
+        "Extended daily queries"
       ],
-      buttonText: "Upgrade to Pro"
+      buttonText: "Upgrade to Pro",
+      priceId: import.meta.env.VITE_STRIPE_PRO_PRICE_ID,
+      onButtonClick: () => handleSubscribe(import.meta.env.VITE_STRIPE_PRO_PRICE_ID),
+      isCurrentPlan: subscriptionTier === 'pro'
+    },
+    {
+      title: "Pro+",
+      price: "$29",
+      description: "Ideal for professional developers and small teams.",
+      icon: <Crown className="w-5 h-5 text-primary" />,
+      highlighted: true,
+      features: [
+        "Everything in Pro",
+        "Advanced code generation",
+        "Team collaboration features",
+        "Custom integration options",
+        "Priority email support",
+        "Unlimited daily queries",
+        "Advanced security features"
+      ],
+      buttonText: "Upgrade to Pro+",
+      priceId: import.meta.env.VITE_STRIPE_PRO_PLUS_PRICE_ID,
+      onButtonClick: () => handleSubscribe(import.meta.env.VITE_STRIPE_PRO_PLUS_PRICE_ID),
+      isCurrentPlan: subscriptionTier === 'pro_plus'
     },
     {
       title: "Enterprise",
-      price: "~$99",
+      price: "Custom",
       description: "For teams and organizations with advanced needs.",
-      icon: <Crown className="w-5 h-5 text-primary" />,
+      icon: <Zap className="w-5 h-5 text-primary" />,
       highlighted: false,
       features: [
-        "Everything in Pro",
-        "Team collaboration features",
-        "Custom integration options",
+        "Everything in Pro+",
+        "Custom AI model fine-tuning",
+        "Advanced team collaboration",
         "Advanced security features",
         "Dedicated account manager",
         "24/7 priority support",
         "Training and onboarding",
-        "Custom AI model fine-tuning"
+        "Custom integration development"
       ],
-      buttonText: "Contact Sales"
+      buttonText: "Contact Sales",
+      onButtonClick: handleContactSales
     }
   ];
 
   const delays = [
     "animation-delay-300",
     "animation-delay-600",
-    "animation-delay-900"
+    "animation-delay-900",
+    "animation-delay-1200"
   ];
 
   React.useEffect(() => {
@@ -179,9 +257,14 @@ const PricingPage: React.FC = () => {
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto opacity-0 animate-fade-in animation-delay-300">
                 Choose the plan that's right for you and start coding smarter with 360code.io
               </p>
+              {!isAuthenticated && (
+                <p className="mt-4 text-sm text-primary opacity-0 animate-fade-in animation-delay-600">
+                  Sign in to manage your subscription
+                </p>
+              )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-6">
               {pricingTiers.map((tier, index) => (
                 <PricingTier
                   key={index}
@@ -191,8 +274,11 @@ const PricingPage: React.FC = () => {
                   features={tier.features}
                   highlighted={tier.highlighted}
                   icon={tier.icon}
-                  delay={delays[index]}
-                  buttonText={tier.buttonText}
+                  delay={delays[index % delays.length]}
+                  buttonText={isLoading ? 'Loading...' : tier.buttonText}
+                  priceId={tier.priceId}
+                  onButtonClick={tier.onButtonClick}
+                  isCurrentPlan={tier.isCurrentPlan}
                 />
               ))}
             </div>
@@ -201,9 +287,12 @@ const PricingPage: React.FC = () => {
               <h3 className="text-xl font-semibold mb-4">Need a custom solution?</h3>
               <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
                 We offer tailored solutions for larger teams and specialized requirements. 
-                Contact our sales team to discuss how we can meet your specific needs.
+                Contact our team to discuss how we can meet your specific needs.
               </p>
-              <button className="gradient-button px-6 py-2 rounded-md font-medium text-white shadow-md hover:shadow-lg transition-shadow">
+              <button 
+                className="gradient-button px-6 py-2 rounded-md font-medium text-white shadow-md hover:shadow-lg transition-shadow"
+                onClick={handleContactUs}
+              >
                 Contact Us
               </button>
             </div>
@@ -211,6 +300,11 @@ const PricingPage: React.FC = () => {
         </section>
       </main>
       <Footer />
+      
+      <ContactPopup
+        isOpen={isContactPopupOpen}
+        onClose={() => setIsContactPopupOpen(false)}
+      />
     </div>
   );
 };
